@@ -8,6 +8,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
+import javax.print.attribute.standard.JobOriginatingUserName
 
 interface DAOFacade {
     suspend fun saveMessage(body: String)
@@ -33,7 +34,15 @@ fun initDatabase(config: ApplicationConfig) {
             (config.propertyOrNull("storage.dbFilePath")?.getString()?.let {
                 File(it).canonicalFile.absolutePath
             } ?: "")
-    Database.connect(createHikariDataSource(url = jdbcURL, driver = driverClassName))
+
+    Database.connect(createHikariDataSource(
+        url = jdbcURL,
+        driver = driverClassName,
+        user = "postgres",
+        pwd = "postgres"
+    ))
+//    val db2 = Database.connect(createHikariDataSource(url = jdbcURL, driver = driverClassName))
+
     transaction {
         SchemaUtils.create(Messages)
     }
@@ -42,12 +51,16 @@ fun initDatabase(config: ApplicationConfig) {
 private fun createHikariDataSource(
     url: String,
     driver: String,
+    user: String,
+    pwd: String
 ) = HikariDataSource(HikariConfig().apply {
     driverClassName = driver
     jdbcUrl = url
     maximumPoolSize = 3
     isAutoCommit = false
     transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+    username = user
+    password = pwd
     validate()
 })
 

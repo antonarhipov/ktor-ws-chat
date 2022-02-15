@@ -6,6 +6,7 @@ import io.ktor.application.*
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
+import java.time.Duration
 import java.util.*
 
 fun main(args: Array<String>): Unit =
@@ -14,7 +15,12 @@ fun main(args: Array<String>): Unit =
 
 fun Application.module() {
 
-    install(WebSockets)
+    install(WebSockets) {
+        pingPeriod = Duration.ofSeconds(15)
+        timeout = Duration.ofSeconds(15)
+        maxFrameSize = Long.MAX_VALUE
+        masking = false
+    }
 
     initDatabase(this.environment.config)
 
