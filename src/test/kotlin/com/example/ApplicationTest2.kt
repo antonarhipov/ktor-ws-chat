@@ -17,15 +17,9 @@ import org.junit.Test
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.PostgreSQLContainer
 
-class ApplicationTest : AbstractTest() {
-//
-//
-//    val container = PostgreSQLContainer("postgres:14-alpine")
-//        .withUsername("postgres")
-//        .withPassword("postgres")
-//        .withDatabaseName("ktorjournal").apply {
-//            start()
-//        }
+class ApplicationTest2 : AbstractTest() {
+
+
 
 //    private val testEnv: ApplicationEngineEnvironment
     fun testEnv() = createTestEnvironment {

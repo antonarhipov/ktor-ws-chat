@@ -42,3 +42,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikaricp_version")
     implementation("org.ehcache:ehcache:$ehcache_version")
 }
+
+tasks.withType<Test>(){
+    maxParallelForks = Runtime.getRuntime().availableProcessors() / 2
+}
