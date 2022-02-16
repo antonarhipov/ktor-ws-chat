@@ -33,6 +33,8 @@ dependencies {
 
     testImplementation("org.testcontainers:testcontainers:$testContainers_version")
     testImplementation("org.testcontainers:postgresql:$testContainers_version")
+    testImplementation("org.awaitility:awaitility:4.1.1")
+    testImplementation("org.assertj:assertj-core:3.22.0")
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
@@ -43,6 +45,6 @@ dependencies {
     implementation("org.ehcache:ehcache:$ehcache_version")
 }
 
-tasks.withType<Test>(){
+tasks.withType<Test> {
     maxParallelForks = Runtime.getRuntime().availableProcessors() / 2
 }

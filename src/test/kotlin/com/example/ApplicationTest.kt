@@ -3,33 +3,20 @@ package com.example
 import com.example.db.DAOFacadeImpl
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import io.ktor.application.*
 import io.ktor.config.*
-import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
-import io.ktor.server.engine.*
 import io.ktor.server.testing.*
-import org.junit.After
-import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Before
+import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.slf4j.LoggerFactory
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.shaded.org.awaitility.Awaitility
+import java.util.concurrent.TimeUnit
 
 class ApplicationTest : AbstractTest() {
-//
-//
-//    val container = PostgreSQLContainer("postgres:14-alpine")
-//        .withUsername("postgres")
-//        .withPassword("postgres")
-//        .withDatabaseName("ktorjournal").apply {
-//            start()
-//        }
 
-//    private val testEnv: ApplicationEngineEnvironment
+    private val N = 5
+
     fun testEnv() = createTestEnvironment {
-//        container.start()
 
         val my: Config = ConfigFactory.parseMap(
             mapOf(
@@ -43,82 +30,39 @@ class ApplicationTest : AbstractTest() {
         config = HoconApplicationConfig(merged)
     }
 
-//    @Before
-//    fun before(){
-//        container.start()
-//    }
-//
-//    @After
-//    fun after(){
-//        container.stop()
-//    }
-
     @Test
-    fun testSomething() {
+    fun testMessageRoundtrip() {
         withApplication(testEnv()) {
-
             val dao = DAOFacadeImpl()
+            assertThat(runBlocking { dao.getMessages() }).isEmpty();
 
             handleWebSocketConversation("/chat") { incoming, outgoing ->
-                println("***********************")
-                val ignore = incoming.receive() //ignore the welcome message
-
-                outgoing.send(Frame.Text("Testcontainers"))
-
-                val responseText = (incoming.receive() as Frame.Text).readText()
-                println(responseText)
-                println("***********************")
-
-                val messages = dao.getMessages()
-                println("********************: ${messages.size}")
-
-                assertEquals(1, messages.size)
-
-                messages.forEach {
-                    println(it)
+                val ignoreWelcome = incoming.receive()
+                repeat(N) {
+                    outgoing.send(Frame.Text("Testcontainers $it"))
+                    incoming.receive() // why???
                 }
-                println("***********************")
             }
-        }
-    }
 
-    @Test
-    fun testSomething2() {
-        withApplication(testEnv()) {
-
-            val dao = DAOFacadeImpl()
-
-            handleWebSocketConversation("/chat") { incoming, outgoing ->
-                println("***********************")
-                val ignore = incoming.receive() //ignore the welcome message
-
-                outgoing.send(Frame.Text("JetBrains"))
-
-                val responseText = (incoming.receive() as Frame.Text).readText()
-                println(responseText)
-                println("***********************")
-
-                val messages = dao.getMessages()
-                println("********************: ${messages.size}")
-
-                assertEquals(1, messages.size)
-
-                messages.forEach {
-                    println(it)
+            Awaitility.await("all messages were saved to the database")
+                .atMost(2, TimeUnit.SECONDS)
+                .until {
+                    runBlocking {
+                        val messages = dao.getMessages()
+                        messages.size == N
+                    }
                 }
-                println("***********************")
-            }
-        }
 
-    }
-
-//    @Test
-    fun testRoot() {
-        withTestApplication(Application::module) {
             handleWebSocketConversation("/chat") { incoming, outgoing ->
-                val responseText = (incoming.receive() as Frame.Text).readText()
-                println(responseText)
+                val ignoreWelcome = incoming.receive()
+                repeat(N) {
+                    val responseText = (incoming.receive() as Frame.Text).readText()
+                    assertThat(responseText).contains("Testcontainers")
+
+                }
             }
         }
     }
+
+
 }
