@@ -33,7 +33,18 @@ fun initDatabase(config: ApplicationConfig) {
             (config.propertyOrNull("storage.dbFilePath")?.getString()?.let {
                 File(it).canonicalFile.absolutePath
             } ?: "")
-    Database.connect(createHikariDataSource(url = jdbcURL, driver = driverClassName))
+
+    val user = config.property("storage.user").getString()
+    val password = config.property("storage.password").getString()
+
+    Database.connect(createHikariDataSource(
+        url = jdbcURL,
+        driver = driverClassName,
+        user = user,
+        pwd = password
+    ))
+//    val db2 = Database.connect(createHikariDataSource(url = jdbcURL, driver = driverClassName))
+
     transaction {
         SchemaUtils.create(Messages)
     }
@@ -42,12 +53,16 @@ fun initDatabase(config: ApplicationConfig) {
 private fun createHikariDataSource(
     url: String,
     driver: String,
+    user: String,
+    pwd: String
 ) = HikariDataSource(HikariConfig().apply {
     driverClassName = driver
     jdbcUrl = url
     maximumPoolSize = 3
     isAutoCommit = false
     transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+    username = user
+    password = pwd
     validate()
 })
 

@@ -5,10 +5,11 @@ val h2_version = "1.4.200"
 val hikaricp_version = "5.0.0"
 val postgresql_version = "42.3.0"
 val ehcache_version = "3.9.7"
+val testContainers_version = "1.16.3"
 
 plugins {
     application
-    kotlin("jvm") version "1.5.20"
+    kotlin("jvm") version "1.6.10"
 }
 
 group = "com.example"
@@ -28,6 +29,11 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
 
+    testImplementation("org.testcontainers:testcontainers:$testContainers_version")
+    testImplementation("org.testcontainers:postgresql:$testContainers_version")
+    testImplementation("org.awaitility:awaitility:4.1.1")
+    testImplementation("org.assertj:assertj-core:3.22.0")
+
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
@@ -35,4 +41,8 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresql_version")
     implementation("com.zaxxer:HikariCP:$hikaricp_version")
     implementation("org.ehcache:ehcache:$ehcache_version")
+}
+
+tasks.withType<Test> {
+    maxParallelForks = Runtime.getRuntime().availableProcessors() / 2
 }
