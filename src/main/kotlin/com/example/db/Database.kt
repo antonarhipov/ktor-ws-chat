@@ -8,7 +8,6 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
-import javax.print.attribute.standard.JobOriginatingUserName
 
 interface DAOFacade {
     suspend fun saveMessage(body: String)

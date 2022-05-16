@@ -27,7 +27,7 @@ fun Application.module() {
     val dao = DAOFacadeImpl()
 
     routing {
-        val connections = Collections.synchronizedSet<Connection>(LinkedHashSet())
+        val connections = mutableSetOf<Connection>()
 
         webSocket("/chat") {
             val c = Connection(this)
